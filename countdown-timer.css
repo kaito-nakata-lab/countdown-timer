@@ -23,11 +23,17 @@ body{
     font-variant-numeric: tabular-nums;
 }
 
-.fade-in-item {
-    animation: fadeIn 0.5s ease-out;
+.item-wrapper {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0;
+    overflow: hidden;
+
+    transition: max-height 0.5s ease-out, opacity 0.5s ease-out, margin-bottom 0.5s ease-out;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.item-wrapper.show {
+    max-height: 200px;
+    opacity: 1;
+    margin-bottom: 1rem;
 }
