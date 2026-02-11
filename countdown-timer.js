@@ -1,6 +1,7 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', () => {
+    const headerElement = document.getElementById('app-header');
     const currentTimeElement = document.getElementById('current-time');
     const nameInput = document.getElementById('event-name');
     const dateInput = document.getElementById('event-date');
@@ -8,6 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const listElement = document.getElementById('countdown-list');
 
     let countdowns = [];
+
+    headerElement.addEventListener('click', () => {
+        location.reload();
+    });
 
     addButton.addEventListener('click', addCountdown);
 
