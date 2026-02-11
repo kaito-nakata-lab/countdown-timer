@@ -1,41 +1,57 @@
 'use strict';
 
-const addCountdown = document.getElementById('start-countdown')
+document.addEventListener('DOMContentLoaded', () => {
+    const currentTimeElement = document.getElementById('current-time');
+    const nameInput = document.getElementById('event-name');
+    const dateInput = document.getElementById('event-date');
+    const addButton = document.getElementById('add-button');
+    const listElement = document.getElementById('countdown-list');
 
-function padZero(num) {
-    return num.toString().padStart(2, '0');
-}
+    let countdowns = [];
 
-function updateClock() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = padZero(now.getMonth() + 1);
-    const day = padZero(now.getDate());
-    const hours = padZero(now.getHours());
-    const minutes = padZero(now.getMinutes());
-    const seconds = padZero(now.getSeconds());
+    addButton.addEventListener('click', addCountdown);
 
-    const timeString = `${year}年${month}月${day}日 ${hours}:${minutes}:${seconds}`;
-    document.getElementById('current-time').innerText = timeString;
-}
+    nameInput.addEventListener('keydown', checkEnter);
+    dateInput.addEventListener('keydown', checkEnter);
 
-let countdowns = [];
+    listElement.addEventListener('click', (event) => {
+        if (event.target.classList.contains('delete-btn')) {
+            const id = Number(event.target.getAttribute('data-id'));
+            deleteCountdown(id);
+        }
+    });
 
-addCountdown.addEventListener(
-    'click',
-    () => {
-        const nameInput = document.getElementById('event-name');
-        const dateInput = document.getElementById('event-date');
+    const padZero = (num) => num.toString().padStart(2, '0');
 
+    function updateClock() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = padZero(now.getMonth() + 1);
+        const day = padZero(now.getDate());
+        const hours = padZero(now.getHours());
+        const minutes = padZero(now.getMinutes());
+        const seconds = padZero(now.getSeconds());
+
+        currentTimeElement.innerText = `${year}年${month}月${day}日 ${hours}:${minutes}:${seconds}`;
+    }
+
+    function checkEnter(event) {
+        if (event.key === 'Enter') {
+            addCountdown();
+        }
+    }
+
+    function addCountdown() {
         const eventName = nameInput.value;
-        const targetDateStr = dateInput.value;
+        const targetDateStrings = dateInput.value;
 
-        if (!eventName || !targetDateStr) {
-            alert("イベント名と日時を入力してください");
+        if (!eventName || !targetDateStrings) {
+            if (!eventName) nameInput.focus();
+            else dateInput.focus();
             return;
         }
 
-        const targetDate = new Date(targetDateStr);
+        const targetDate = new Date(targetDateStrings);
         const now = new Date();
 
         if (targetDate <= now) {
@@ -54,59 +70,64 @@ addCountdown.addEventListener(
 
         nameInput.value = '';
         dateInput.value = '';
+        nameInput.focus();
     }
-);
 
-function deleteCountdown(id) {
-    countdowns = countdowns.filter(item => item.id !== id);
-    renderCountdowns();
-}
+    function deleteCountdown(id) {
+        countdowns = countdowns.filter(item => item.id !== id);
+        renderCountdowns();
+    }
 
-function updateCountdowns() {
-    const now = new Date();
-    const listElement = document.getElementById('countdown-list');
+    function updateCountdowns() {
+        const now = new Date();
 
-    countdowns.forEach(item => {
-        const diff = item.target - now;
-        const timerElement = document.getElementById(`timer-${item.id}`);
+        countdowns.forEach(item => {
+            const diff = item.target - now;
+            const timerElement = document.getElementById(`timer-${item.id}`);
 
-        if (!timerElement) return;
+            if (!timerElement) return;
 
-        if (diff <= 0) {
-            timerElement.innerText = "終了しました";
-            timerElement.style.color = "red";
-        } else {
-            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const s = Math.floor((diff % (1000 * 60)) / 1000);
+            if (diff <= 0) {
+                timerElement.innerHTML = '<span class="badge bg-danger">終了しました</span>';
+            } else {
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
 
-            timerElement.innerText = `あと ${d}日 ${padZero(h)}時間 ${padZero(m)}分 ${padZero(s)}秒`;
-        }
-    });
-}
+                timerElement.innerText = `あと ${d}日 ${padZero(h)}時間 ${padZero(m)}分 ${padZero(s)}秒`;
+            }
+        });
+    }
 
-function renderCountdowns() {
-    const listElement = document.getElementById('countdown-list');
-    listElement.innerHTML = '';
+    function renderCountdowns() {
+        listElement.innerHTML = '';
 
-    countdowns.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'countdown-item';
-        li.innerHTML = `
-            <button class="delete-btn" onclick="deleteCountdown(${item.id})">削除</button>
-            <div class="event-title">${item.name} まで</div>
-            <div id="timer-${item.id}" class="timer-display">計算中...</div>
-        `;
-        listElement.appendChild(li);
-    });
+        countdowns.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'card bg-light border';
 
-    updateCountdowns();
-}
+            div.innerHTML = `
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div class="text-start">
+                        <h5 class="card-title text-primary mb-1">${item.name}</h5>
+                        <p class="card-text timer-display fs-5 mb-0" id="timer-${item.id}">計算中...</p>
+                    </div>
 
-setInterval(() => {
+                    <button class="btn btn-outline-danger btn-sm ms-3 delete-btn" data-id="${item.id}">削除</button>
+                </div>
+            `;
+
+            listElement.appendChild(div);
+        });
+
+        updateCountdowns();
+    }
+
+    setInterval(() => {
+        updateClock();
+        updateCountdowns();
+    }, 1000);
+
     updateClock();
-    updateCountdowns();
-}, 1000);
-
-updateClock();
+});
