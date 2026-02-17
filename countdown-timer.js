@@ -53,12 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const targetDate = new Date(targetDateStrings);
-        const now = new Date();
-
-        if (targetDate <= now) {
-            alert("日付を設定してください");
-            return;
-        }
 
         const newCountdown = {
             id: Date.now(),
@@ -67,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         countdowns.push(newCountdown);
-
         createCountdownItem(newCountdown);
 
         nameInput.value = '';
@@ -82,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cardDiv = document.createElement('div');
         cardDiv.className = 'card bg-light border';
+
         cardDiv.innerHTML = `
             <div class="card-body d-flex justify-content-between align-items-center">
                 <div class="text-start">
@@ -128,15 +122,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!timerElement) return;
 
-        if (diff <= 0) {
-            timerElement.innerHTML = '<span class="badge bg-danger">終了しました</span>';
-        } else {
-            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const s = Math.floor((diff % (1000 * 60)) / 1000);
+        const absDiff = Math.abs(diff);
 
+        const d = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((absDiff % (1000 * 60)) / 1000);
+
+        if (diff > 0) {
             timerElement.innerText = `あと ${d}日 ${padZero(h)}時間 ${padZero(m)}分 ${padZero(s)}秒`;
+            timerElement.classList.remove('text-danger');
+            timerElement.classList.add('text-dark');
+        } else {
+            timerElement.innerText = `${d}日 ${padZero(h)}時間 ${padZero(m)}分 ${padZero(s)}秒 経過`;
+            timerElement.classList.remove('text-dark');
+            timerElement.classList.add('text-danger');
         }
     }
 
